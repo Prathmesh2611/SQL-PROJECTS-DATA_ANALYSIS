@@ -1,7 +1,3 @@
-NAME - PRATHMESH BHUKELE
-ROLL - S6114
-PROJECT - CLASSICMODELS
-
 
 SELECT * FROM CUSTOMERS;
 SELECT * FROM ORDERDETAILS;
@@ -101,5 +97,27 @@ AS
     
 SELECT * FROM Top_5_Cus_CTE;
 
+# 6 Compute the commission for each sales representative, assuming the commission is 5% of the value of an order. Sort by employee last name and first name.
+use classicmodels;
+SELECT 
+    e.lastName AS Last_Name,
+    e.firstName AS First_Name,
+    o.orderNumber AS Order_Number,
+    o.orderDate AS Order_Date,
+    SUM(od.priceEach * od.quantityOrdered) AS Order_Value,
+    (SUM(od.priceEach * od.quantityOrdered) * 0.05) AS Commission
+FROM
+    employees e
+JOIN
+    customers c ON e.employeeNumber = c.salesRepEmployeeNumber
+JOIN
+    orders o ON c.customerNumber = o.customerNumber
+JOIN
+    orderdetails od ON o.orderNumber = od.orderNumber
+WHERE
+    e.jobTitle = 'Sales Rep'
+GROUP BY
+    e.employeeNumber, o.orderNumber
+ORDER BY
+    Last_Name, First_Name, Order_Number;
 
-# Job mil jayega bhai
