@@ -76,9 +76,7 @@ BEGIN
 	AND PAYMENTDATE >= '2003-10-01' AND PAYMENTDATE <= '2003-12-31';
 END $$
 DELIMITER ;
-
 CALL REVENUE_GENERATED_2()
-
 DROP PROCEDURE REVENUE_GENERATED_2;
 
 
@@ -98,7 +96,7 @@ AS
 SELECT * FROM Top_5_Cus_CTE;
 
 # 6 Compute the commission for each sales representative, assuming the commission is 5% of the value of an order. Sort by employee last name and first name.
-use classicmodels;
+
 SELECT 
     e.lastName AS Last_Name,
     e.firstName AS First_Name,
@@ -121,3 +119,45 @@ GROUP BY
 ORDER BY
     Last_Name, First_Name, Order_Number;
 
+# 7 What is the quantity on hand for products listed on 'On Hold' orders?
+
+SELECT O.Ordernumber, P.Productcode, P.ProductName, P.ProductLine, O.STATUS
+FROM Orders O 
+INNER JOIN Orderdetails OD USING(oRDERnUMBER)
+INNER JOIN PRODUCTS P Using(ProductCode)
+WHERE O.Status regexp 'ON Hold';
+
+# 8 Reports those products that have been sold with a markup of 100% or more (i.e.,  the priceEach is at least twice the buyPrice)
+
+SELECT  OD.Ordernumber,ProductCode, productName, ProductLine, BuyPrice, od.priceEach , MSRP
+FROM products p
+INNER JOIN Orderdetails OD using(ProductCode)
+WHERE PriceEach >= (buyprice*2)  
+having buyPrice < (OD.PRICEEACH ) 
+ORDER BY MSRP ASC;
+
+# 9 Are there any products that appear on all orders?
+
+SELECT DISTINCT p.productCode, p.productName
+FROM products p
+WHERE NOT EXISTS (
+    SELECT o.orderNumber
+    FROM orderdetails od
+    LEFT JOIN orders ord ON od.orderNumber = ord.orderNumber
+    WHERE ord.status = 'Shipped'  -- You can adjust the status as needed
+    AND p.productCode NOT IN (
+        SELECT od.productCode
+        FROM orderdetails od
+        WHERE od.orderNumber = o.orderNumber
+    )
+);
+
+# 10 List the names of customers and their corresponding order number where a particular order from that customer has a value greater than $25,000?
+
+SELECT C.CustomerNumber, C.Customername, O.OrderNumber, Sum(OD.QuantityOrdered * PriceEach) as Customer_total_Order_value
+FROM Orderdetails OD 
+INNER JOIN Orders O using(OrderNumber)
+INNER JOIN Customers C using(Customernumber)
+group by 1,2,3
+HAVING  Customer_total_Order_value > 25000
+ORDER BY Customer_total_Order_value ASC;
