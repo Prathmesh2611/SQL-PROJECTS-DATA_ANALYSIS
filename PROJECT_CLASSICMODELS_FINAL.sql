@@ -100,3 +100,6 @@ AS
     LIMIT 5)
     
 SELECT * FROM Top_5_Cus_CTE;
+
+
+# Job mil jayega bhai
