@@ -161,3 +161,44 @@ INNER JOIN Customers C using(Customernumber)
 group by 1,2,3
 HAVING  Customer_total_Order_value > 25000
 ORDER BY Customer_total_Order_value ASC;
+
+# 11 Get total stock in each warehouse
+SELECT warehouseName,sum(quantityInStock) as totalstock
+from products
+inner join warehouses on warehouses.warehousecode = products.warehousecode
+group by warehousename
+order by totalstock DESC;
+
+# 12 Get comparative data between total stock & total order
+
+SELECT productName, quantityInStock, sum(quantityOrdered) AS totalOrdered, (quantityInStock - sum(quantityOrdered)) AS currentInventory 
+FROM products
+LEFT JOIN orderdetails ON products.productCode = orderdetails.productCode
+GROUP BY productName,quantityInStock
+ORDER BY currentInventory DESC;
+
+# 13 Get customer profile data including orders and payments
+SELECT c.customerNumber, c.customerName, c.country, c.creditlimit, totalorder, totalPayment, (totalPayment - c.creditlimit) as creditlimitdiff
+FROM (SELECT customernumber, customerName, country, creditLimit FROM customers) c
+LEFT JOIN
+	(SELECT customerNumber, sum(amount) AS totalPayment FROM payments GROUP BY customerNumber) p
+ON c.customerNumber = p.customerNumber
+LEFT JOIN
+	(SELECT customerNumber,count(orderNumber) AS totalorder FROM orders GROUP BY customerNumber) o
+ON c.customerNumber = o.customerNumber
+GROUP BY customerNumber
+ORDER BY totalPayment DESC;
+
+# 14 Get Employee performance data
+select e.employeenumber,
+e.firstname,
+e.lastname,
+e.jobtitle,
+count(o.ordernumber) as totalsales
+from employees as e
+left join customers as c on e.employeenumber = c.salesrepemployeenumber
+left join orders as o on c.customernumber = o.customernumber
+group by employeenumber
+order by totalsales desc;
+
+#done
